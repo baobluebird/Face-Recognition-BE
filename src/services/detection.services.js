@@ -64,7 +64,6 @@ const createDetection = async (image) => {
       await Face.create({
         image: savedImage.secure_url,
       });
-      
       resolve({
         data: savedImage.secure_url,
         status: "OK",
@@ -76,7 +75,6 @@ const createDetection = async (image) => {
   });
 };
 const getLatestImage = async (req, res) => {
-  return new Promise(async (resolve, reject) => {
   try {
     const latestFace = await Face.findOne().sort({ createdAt: -1 });
 
@@ -87,18 +85,18 @@ const getLatestImage = async (req, res) => {
       });
     }
 
-        // Lấy URL của ảnh từ Cloudinary
+    // Lấy URL của ảnh từ Cloudinary
     const imageUrl = latestFace.image;
 
     // Gọi đến URL của Cloudinary để tải ảnh
     const response = await axios({
-      url: imageUrl,
+      url: imageUrl, // URL của ảnh trên Cloudinary
       method: 'GET',
-      responseType: 'stream', // Trả về dữ liệu dưới dạng stream (binary)
+      responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng nhị phân (binary)
     });
-
+    console.log(response)
     resolve({
-      data: response,
+      data: response.data,
       status: "OK",
       message: "Create hole successfully",
     });
@@ -109,7 +107,6 @@ const getLatestImage = async (req, res) => {
       error: error.message,
     });
   }
-});
 };
 
 module.exports = {
