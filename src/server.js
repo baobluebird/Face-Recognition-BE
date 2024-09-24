@@ -48,22 +48,14 @@ app.post("/api/detection/send-image", upload.single("imageFile"), async (req, re
   try {
     // Kiểm tra nếu không có tệp ảnh nào được tải lên
     if (!req.file) {
-      return res.status(400).json({ status: "error", message: "No file uploaded" });
+      return res.status(400).json({
+        status: "ERR",
+        message: "No file uploaded",
+      });
     }
 
-    // Lấy ảnh từ request
-    const image = {
-      data: req.file.buffer,
-      contentType: req.file.mimetype,
-    };
+    const response = await DetectionService.createDetection(req.file);
 
-    // Thực hiện logic xử lý hình ảnh của bạn
-    console.log("Image received:", image);
-
-    // Ví dụ xử lý hình ảnh bằng một dịch vụ DetectionService
-    const response = await DetectionService.createDetection(image);
-
-    // Trả về phản hồi sau khi xử lý thành công
     return res.status(200).json(response);
   } catch (error) {
     console.error("Error:", error);

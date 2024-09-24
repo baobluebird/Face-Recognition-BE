@@ -64,6 +64,7 @@ const createDetection = async (image) => {
       await Face.create({
         image: savedImage.secure_url,
       });
+      
       resolve({
         data: savedImage.secure_url,
         status: "OK",
