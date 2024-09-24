@@ -38,7 +38,7 @@ const createDetection = async (image) => {
       const formattedTime = `${hours}h${minutes}-${day}-${month}-${year}`;
 
       const imagePath = path.join(uploadsDir, `${formattedTime}.jpg`);
-      fs.writeFileSync(imagePath, image.data);
+      fs.writeFileSync(imagePath, image);
 
       const savedImage = await cloudinary.uploader.upload(imagePath, {
         public_id: `hole_${formattedTime}`,
