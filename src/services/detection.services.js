@@ -74,33 +74,38 @@ const createDetection = async (image) => {
     }
   });
 };
+const getLatestImage = async (req, res) => {
+  try {
+    // Tìm ảnh mới nhất trong cơ sở dữ liệu
+    const latestFace = await Face.findOne().sort({ createdAt: -1 });
 
-const getLatestImage = async () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      const latestFace = await Face.findOne().sort({ createdAt: -1 }); 
-
-      if (!latestFace) {
-        resolve({
-          data: null,
-          status: "FAIL",
-          message: "No image found",
-        });
-        return;
-      }
-      resolve({
-        data: latestFace.image, 
-        status: "OK",
-        message: "Get image successfully",
-      });
-    } catch (error) {
-      reject({
-        status: "ERROR",
-        message: "Failed to get latest image",
-        error: error.message
+    if (!latestFace) {
+      return res.status(404).json({
+        status: "FAIL",
+        message: "No image found",
       });
     }
-  });
+
+    // Lấy URL của ảnh từ Cloudinary
+    const imageUrl = latestFace.image;
+
+    // Gọi đến URL của Cloudinary để tải ảnh
+    const response = await axios({
+      url: imageUrl, // URL của ảnh trên Cloudinary
+      method: 'GET',
+      responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng nhị phân (binary)
+    });
+
+    // Trả về ảnh dưới dạng file jpg
+    res.setHeader('Content-Type', 'image/jpeg');
+    return res.send(response.data);
+  } catch (error) {
+    return res.status(500).json({
+      status: "ERROR",
+      message: "Failed to get latest image",
+      error: error.message,
+    });
+  }
 };
 
 module.exports = {
