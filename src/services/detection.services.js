@@ -1,10 +1,10 @@
-const Hole = require("../models/face.model");
+const Face = require("../models/face.model");
 const dotenv = require("dotenv");
-const axios = require('axios');
+const axios = require("axios");
 dotenv.config();
 const path = require("path");
 const fs = require("fs");
-const geolib = require('geolib');
+const geolib = require("geolib");
 const cloudinary = require("cloudinary");
 cloudinary.config({
   cloud_name: process.env.API_NAME_CLOUDINARY,
@@ -12,75 +12,98 @@ cloudinary.config({
   api_secret: process.env.API_SECRET_CLOUDDINARY,
 });
 
-
-const createDetection = async (
-  image,
-) => {
+const createDetection = async (image) => {
   return new Promise(async (resolve, reject) => {
     try {
-      
-        const uploadsDir = path.join(__dirname, '../uploads');
-        if (!fs.existsSync(uploadsDir)) {
-          fs.mkdirSync(uploadsDir);
-        }
-        const now = new Date();
+      const uploadsDir = path.join(__dirname, "../uploads");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir);
+      }
+      const now = new Date();
 
-        // Lấy thời gian UTC (số milliseconds từ 1970-01-01)
-        const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
-      
-        // Giờ Việt Nam chênh lệch 7 tiếng so với UTC
-        const vietnamTime = new Date(utcTime + (7 * 60 * 60000));
-      
-        // Lấy từng phần của thời gian
-        const hours = vietnamTime.getHours().toString().padStart(2, '0'); // Lấy giờ, bổ sung 0 nếu cần
-        const minutes = vietnamTime.getMinutes().toString().padStart(2, '0'); // Lấy phút, bổ sung 0 nếu cần
-        const day = vietnamTime.getDate().toString().padStart(2, '0'); // Lấy ngày, bổ sung 0 nếu cần
-        const month = (vietnamTime.getMonth() + 1).toString().padStart(2, '0'); // Lấy tháng, bổ sung 0 nếu cần
-        const year = vietnamTime.getFullYear(); // Lấy năm
-      
-        // Tạo chuỗi theo định dạng "13h54.09.24.2024"
-        const formattedTime = `${hours}h${minutes}-${day}-${month}-${year}`;
+      // Lấy thời gian UTC (số milliseconds từ 1970-01-01)
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
 
-        const imagePath = path.join(uploadsDir, `${formattedTime}.jpg`);
-        fs.writeFileSync(imagePath, image.data);
+      // Giờ Việt Nam chênh lệch 7 tiếng so với UTC
+      const vietnamTime = new Date(utcTime + 7 * 60 * 60000);
 
-        const savedImage = await cloudinary.uploader.upload(imagePath, {
-          public_id: `hole_${formattedTime}`,
-          resource_type: "image"
-        });
+      // Lấy từng phần của thời gian
+      const hours = vietnamTime.getHours().toString().padStart(2, "0"); // Lấy giờ, bổ sung 0 nếu cần
+      const minutes = vietnamTime.getMinutes().toString().padStart(2, "0"); // Lấy phút, bổ sung 0 nếu cần
+      const day = vietnamTime.getDate().toString().padStart(2, "0"); // Lấy ngày, bổ sung 0 nếu cần
+      const month = (vietnamTime.getMonth() + 1).toString().padStart(2, "0"); // Lấy tháng, bổ sung 0 nếu cần
+      const year = vietnamTime.getFullYear(); // Lấy năm
 
-        fs.unlinkSync(imagePath);
-        
-        //const url = `${process.env.URL_VPS_HOLE}/process-image?image_url=${savedImage.secure_url}`;
+      // Tạo chuỗi theo định dạng "13h54.09.24.2024"
+      const formattedTime = `${hours}h${minutes}-${day}-${month}-${year}`;
 
-        //const response = await axios.post(url);
-        // if(response.data.result == 'No detection'){
-        //   //delete hole
-        //   await Hole.findByIdAndDelete(hole._id);
-        //   resolve({
-        //     status: "ERR",
-        //     message: "No detection",
-        //   });
-        // }
-        // hole.image = response.data.image_url;
-        // hole.description = response.data.result;
-        // await hole.save();
+      const imagePath = path.join(uploadsDir, `${formattedTime}.jpg`);
+      fs.writeFileSync(imagePath, image.data);
 
-        resolve({
-          data: savedImage.secure_url,
-          status: "OK",
-          message: "Create hole successfully",
-        });
-      
+      const savedImage = await cloudinary.uploader.upload(imagePath, {
+        public_id: `hole_${formattedTime}`,
+        resource_type: "image",
+      });
+
+      fs.unlinkSync(imagePath);
+
+      //const url = `${process.env.URL_VPS_HOLE}/process-image?image_url=${savedImage.secure_url}`;
+
+      //const response = await axios.post(url);
+      // if(response.data.result == 'No detection'){
+      //   //delete hole
+      //   await Hole.findByIdAndDelete(hole._id);
+      //   resolve({
+      //     status: "ERR",
+      //     message: "No detection",
+      //   });
+      // }
+      // hole.image = response.data.image_url;
+      // hole.description = response.data.result;
+      // await hole.save();
+      await Face.create({
+        image: savedImage.secure_url,
+      });
+      resolve({
+        data: savedImage.secure_url,
+        status: "OK",
+        message: "Create hole successfully",
+      });
     } catch (error) {
       reject(error);
     }
   });
 };
 
+const getLatestImage = async () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const latestFace = await Face.findOne().sort({ createdAt: -1 }); 
 
-
+      if (!latestFace) {
+        resolve({
+          data: null,
+          status: "FAIL",
+          message: "No image found",
+        });
+        return;
+      }
+      resolve({
+        data: latestFace.image, 
+        status: "OK",
+        message: "Get image successfully",
+      });
+    } catch (error) {
+      reject({
+        status: "ERROR",
+        message: "Failed to get latest image",
+        error: error.message
+      });
+    }
+  });
+};
 
 module.exports = {
   createDetection,
+  getLatestImage,
 };
