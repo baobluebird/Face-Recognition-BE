@@ -162,10 +162,9 @@ const DetectionServices = require("../services/detection.services");
 const getLatestImage = async (req, res) => {
   try {
     const response = await DetectionServices.getLatestImage();
-    console.log(response)
-    return res.render("image.ejs", {
-      latestFace: response.data,
-    });
+    console.log(response.data)
+    res.setHeader('Content-Type', 'image/jpeg');
+    return res.send(response.data);
   } catch (e) {
     return res.status(404).json({
       message: e,

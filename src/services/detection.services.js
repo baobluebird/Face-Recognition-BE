@@ -76,7 +76,6 @@ const createDetection = async (image) => {
 };
 const getLatestImage = async (req, res) => {
   try {
-    // Tìm ảnh mới nhất trong cơ sở dữ liệu
     const latestFace = await Face.findOne().sort({ createdAt: -1 });
 
     if (!latestFace) {
@@ -95,10 +94,12 @@ const getLatestImage = async (req, res) => {
       method: 'GET',
       responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng nhị phân (binary)
     });
-
-    // Trả về ảnh dưới dạng file jpg
-    res.setHeader('Content-Type', 'image/jpeg');
-    return res.send(response.data);
+    console.log(response)
+    resolve({
+      data: response.data,
+      status: "OK",
+      message: "Create hole successfully",
+    });
   } catch (error) {
     return res.status(500).json({
       status: "ERROR",
