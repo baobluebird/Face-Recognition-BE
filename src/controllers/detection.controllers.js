@@ -163,8 +163,8 @@ const getLatestImage = async (req, res) => {
   try {
     const response = await DetectionServices.getLatestImage();
     console.log(response.data)
-    res.setHeader('Content-Type', 'image/jpeg');
-    response.data.data.pipe(res);
+    res.set('Content-Type', 'image/jpeg');
+    return res.send(response.data);
   } catch (e) {
     return res.status(404).json({
       message: e,

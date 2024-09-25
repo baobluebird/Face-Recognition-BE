@@ -38,10 +38,10 @@ const createDetection = async (image) => {
       const formattedTime = `${hours}h${minutes}-${day}-${month}-${year}`;
 
       const imagePath = path.join(uploadsDir, `${formattedTime}.jpg`);
-      fs.writeFileSync(imagePath, image);
+      fs.writeFileSync(imagePath, image.data);
 
       const savedImage = await cloudinary.uploader.upload(imagePath, {
-        public_id: `hole_${formattedTime}`,
+        public_id: `face_${formattedTime}`,
         resource_type: "image",
       });
 
@@ -94,12 +94,8 @@ const getLatestImage = async (req, res) => {
       method: 'GET',
       responseType: 'arraybuffer', // Nhận dữ liệu dưới dạng nhị phân (binary)
     });
-    console.log(response)
-    resolve({
-      data: response.data,
-      status: "OK",
-      message: "Create hole successfully",
-    });
+    
+    return(response);
   } catch (error) {
     return res.status(500).json({
       status: "ERROR",
