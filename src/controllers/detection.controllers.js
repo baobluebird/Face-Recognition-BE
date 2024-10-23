@@ -172,6 +172,20 @@ const getLatestImage = async (req, res) => {
   }
 };
 
+const getLatestImageForWaring = async (req, res) => {
+  try {
+    const response = await DetectionServices.getLatestImageForWarning();
+    console.log(response.data)
+    res.set('Content-Type', 'image/jpeg');
+    return res.send(response.data);
+  } catch (e) {
+    return res.status(404).json({
+      message: e,
+    });
+  }
+};
+
 module.exports = {
   getLatestImage,
+  getLatestImageForWaring
 };

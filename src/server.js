@@ -71,6 +71,61 @@ app.post("/api/detection/send-image", upload.single("imageFile"), async (req, re
   }
 });
 
+app.post("/api/detection/warning", upload.single("imageFile"), async (req, res) => {
+  try {
+    // Kiểm tra nếu không có tệp ảnh nào được tải lên
+    if (!req.file) {
+      return res.status(400).json({ status: "error", message: "No file uploaded" });
+    }
+
+    // Lấy ảnh từ request
+    const image = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    };
+
+    // Thực hiện logic xử lý hình ảnh của bạn
+    console.log("Image received:", image);
+
+    // Ví dụ xử lý hình ảnh bằng một dịch vụ DetectionService
+    const response = await DetectionService.createDetectionForCheckHuman(image);
+
+    // Trả về phản hồi sau khi xử lý thành công
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+});
+
+app.post("/api/post-to-cloud", upload.single("image"), async (req, res) => {
+  try {
+    // Kiểm tra nếu không có tệp ảnh nào được tải lên
+    if (!req.file) {
+      return res.status(400).json({ status: "error", message: "No file uploaded" });
+    }
+
+    // Lấy ảnh từ request
+    const image = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    };
+
+    // Thực hiện logic xử lý hình ảnh của bạn
+    console.log("Image received:", image);
+
+    // Ví dụ xử lý hình ảnh bằng một dịch vụ DetectionService
+    const response = await DetectionService.postToCloudiany(image);
+
+    // Trả về phản hồi sau khi xử lý thành công
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ status: "error", message: "Internal server error" });
+  }
+});
+
+
 io.on('connection', (socket) => {
   console.log('have user connect:>> ', socket.id);
   io.emit('newUserConnect', 'Have user connect');
