@@ -50,7 +50,7 @@ const createDetection = async (image) => {
       const url = `${process.env.URL_VPS_FACE}/verify-face?image_url=${savedImage.secure_url}`;
 
       const response = await axios.post(url);
-      console.log(response)
+      console.log(response.data)
       if(response.data.result == 'Face matched'){
         await Face.create({
           image: savedImage.secure_url,
@@ -109,36 +109,27 @@ const createDetectionForCheckHuman = async (image) => {
 
       fs.unlinkSync(imagePath);
 
-      // const url = `${process.env.URL_VPS_FACE}/verify-face?image_url=${savedImage.secure_url}`;
+      const url = `${process.env.URL_VPS_FACE}/detect-human?image_url=${savedImage.secure_url}`;
 
-      // const response = await axios.post(url);
-      // console.log(response)
-      // if(response.data.result == 'Face matched'){
-      //   await Face.create({
-      //     image: savedImage.secure_url,
-      //     name: response.data.closest_id
-      //   });
-      //   resolve({
-      //     data: savedImage.secure_url,
-      //     status: "OK",
-      //     message: "Face matched",
-      //   });
-      // }else{
-      //   resolve({
-      //     data: savedImage.secure_url,
-      //     status: "ERR",
-      //     message: "No matching face found",
-      //   });
-      // }
-             await Face.create({
+      const response = await axios.post(url);
+      console.log(response.data)
+      if(response.data.result == 'Human detected'){
+        await Face.create({
           image: savedImage.secure_url,
           name: "Dangerous"
         });
-              resolve({
+        resolve({
           data: savedImage.secure_url,
           status: "OK",
-          message: "Have people front door",
+          message: "Human detected, Have people front door!",
         });
+      }else{
+        resolve({
+          data: savedImage.secure_url,
+          status: "ERR",
+          message: "Nothing, its just dog",
+        });
+      }
     } catch (error) {
       reject(error);
     }
@@ -193,7 +184,7 @@ const postToCloudiany = async (image) => {
 
 const getLatestImage = async (req, res) => {
   try {
-    const latestFace = await Face.findOne().sort({ createdAt: -1 });
+    const latestFace = await Face.findOne({ name: { $ne: "Dangerous" } }).sort({ createdAt: -1 });
 
     if (!latestFace) {
       return res.status(404).json({
