@@ -62,6 +62,10 @@ const createDetection = async (image) => {
           message: "Face matched",
         });
       }else{
+        await Face.create({
+          image: savedImage.secure_url,
+          name: "Dangerous"
+        });
         resolve({
           data: savedImage.secure_url,
           status: "ERR",
